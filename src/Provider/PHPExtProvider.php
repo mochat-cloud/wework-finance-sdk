@@ -82,6 +82,10 @@ class PHPExtProvider extends AbstractProvider
      */
     protected function setFinanceSDK(array $config = []): void
     {
+        if (! extension_loaded('wxwork_finance_sdk')) {
+            throw new FinanceSDKException('缺少ext-wxwork_finance_sdk扩展');
+        }
+
         $this->config = array_merge($this->config, $config);
         if (! isset($this->config['corpid'])) {
             throw new InvalidArgumentException('缺少配置:corpid');

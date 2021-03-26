@@ -1,0 +1,8 @@
+<?php
+
+return [
+    'corpid' => 'foo',
+    'secret' => 'foo',
+    'private_key' => 'foo',
+    'private_key_version' => 'foo',
+];

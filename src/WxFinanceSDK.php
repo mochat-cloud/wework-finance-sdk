@@ -10,13 +10,12 @@ declare(strict_types=1);
  */
 namespace MoChat\WeWorkFinanceSDK;
 
-use Hyperf\Contract\ConfigInterface;
 use MoChat\WeWorkFinanceSDK\Contract\ProviderInterface;
 use MoChat\WeWorkFinanceSDK\Exception\InvalidArgumentException;
 
 /**
  * Class WxFinanceSDK.
- * @method array getConfig(int $id)  获取微信配置
+ * @method array getConfig()  获取微信配置
  * @method string getChatData(int $seq, int $limit)  获取会话记录数据(加密)
  * @method string decryptData(string $randomKey, string $encryptStr)  解密数据
  * @method \SplFileInfo getMediaData(string $sdkFileId, string $ext)  获取媒体资源
@@ -34,16 +33,26 @@ class WxFinanceSDK
      */
     protected static $wxConfig;
 
-    public function __construct(ConfigInterface $config)
+    public function __construct(array $config = [])
     {
-        $this->config = $config->get('wx_finance_sdk', [
+        $default = [
             'default'   => 'php-ext',
             'providers' => [
                 'php-ext' => [
                     'driver' => \MoChat\WeWorkFinanceSDK\Provider\PHPExtProvider::class,
                 ],
+                'php-ffi' => [
+                    'driver' => \MoChat\WeWorkFinanceSDK\Provider\FFIProvider::class,
+                ],
             ],
-        ]);
+        ];
+
+        // hyperf框架
+        if (interface_exists(\Hyperf\Contract\ConfigInterface::class)) {
+            $default = config('wx_finance_sdk', $default);
+        }
+
+        $this->config = empty($config) ? $default : array_merge($default, $config);
     }
 
     public function __call($name, $arguments)
@@ -57,10 +66,10 @@ class WxFinanceSDK
         throw new InvalidArgumentException('WxFinanceSDK::Method not defined. method:' . $name);
     }
 
-    public static function init(array $wxConfig = []): self
+    public static function init(array $wxConfig = [], array $driverConfig = []): self
     {
         self::$wxConfig = $wxConfig;
-        return make(__CLASS__);
+        return new self($driverConfig);
     }
 
     /**
@@ -73,6 +82,6 @@ class WxFinanceSDK
         if (! $this->config['providers'] || ! $this->config['providers'][$providerName]) {
             throw new InvalidArgumentException("file configurations are missing {$providerName} options");
         }
-        return make($this->config['providers'][$providerName]['driver'])->setConfig(self::$wxConfig);
+        return (new $this->config['providers'][$providerName]['driver']())->setConfig(self::$wxConfig);
     }
 }

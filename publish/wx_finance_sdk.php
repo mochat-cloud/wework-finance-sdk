@@ -15,7 +15,7 @@ return [
             'driver' => \MoChat\WeWorkFinanceSDK\Provider\PHPExtProvider::class,
         ],
         'php-ffi' => [
-            'driver' => '',
+            'driver' => \MoChat\WeWorkFinanceSDK\Provider\FFIProvider::class,
         ],
     ],
 ];
