@@ -35,17 +35,17 @@ class FFIProvider extends AbstractProvider
     /**
      * @var string C语言头
      */
-    private $cHeader = __DIR__ . '/C_sdk/WeWorkFinanceSdk_C.h';
+    private $cHeader = 'WeWorkFinanceSdk_C.h';
 
     /**
      * @var string C语言库
      */
-    private $cLib = __DIR__ . '/C_sdk/libWeWorkFinanceSdk_C.so';
+    private $cLib = 'libWeWorkFinanceSdk_C.so';
 
     public function __destruct()
     {
         // 释放sdk
-        $this->ffi->DestroySdk($this->financeSdk);
+        $this->financeSdk instanceof FFI && $this->ffi->DestroySdk($this->financeSdk);
     }
 
     /**
@@ -144,7 +144,7 @@ class FFIProvider extends AbstractProvider
             }
 
             // buffer写入文件
-            $handle = fopen($path, 'w+');
+            $handle = fopen($path, 'ab+');
             if (! $handle) {
                 throw new \RuntimeException(sprintf('打开文件失败:%s', $path));
             }
@@ -187,6 +187,11 @@ class FFIProvider extends AbstractProvider
         isset($this->config['proxy']) || $this->config['proxy']     = '';
         isset($this->config['passwd']) || $this->config['passwd']   = '';
         isset($this->config['timeout']) || $this->config['timeout'] = '';
+
+        // C包路径
+        $includePath   = dirname(__DIR__, 2) . '/include/';
+        $this->cHeader = $includePath . $this->cHeader;
+        $this->cLib    = $includePath . $this->cLib;
 
         // 引入ffi
         $this->ffi = FFI::cdef(file_get_contents($this->cHeader), $this->cLib);

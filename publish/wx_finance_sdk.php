@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @license  https://github.com/mochat-cloud/mochat/blob/master/LICENSE
  */
 return [
-    'default'   => 'php-ext',
+    'default'   => 'php-ffi',
     'providers' => [
         'php-ext' => [
             'driver' => \MoChat\WeWorkFinanceSDK\Provider\PHPExtProvider::class,

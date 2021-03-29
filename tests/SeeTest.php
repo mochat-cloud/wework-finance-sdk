@@ -52,7 +52,6 @@ class SeeTest extends TestCase
      */
     public function testGetChatData(): void
     {
-        return;
         $chatDataArr = $this->sdk->getDecryptChatData(0, 1000);
         self::assertNotEmpty($chatDataArr);
 
@@ -60,10 +59,10 @@ class SeeTest extends TestCase
         $imageTest = false;
         foreach ($chatDataArr as $msg) {
             // 视频
-//            if (isset($msg['video']) && false === $videoTest) {
-//                $this->_testMediaData($msg['video']['sdkfileid'], 'mp4', $msg['video']['md5sum']);
-//                $videoTest = true;
-//            }
+            if (isset($msg['video']) && false === $videoTest) {
+                $this->_testMediaData($msg['video']['sdkfileid'], 'mp4', $msg['video']['md5sum']);
+                $videoTest = true;
+            }
             // 图片
             if (isset($msg['image']) && false === $imageTest) {
                 $this->_testMediaData($msg['image']['sdkfileid'], 'jpg', $msg['image']['md5sum']);
