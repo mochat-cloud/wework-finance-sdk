@@ -36,7 +36,7 @@ class WxFinanceSDK
     public function __construct(array $config = [])
     {
         $default = [
-            'default'   => 'php-ffi',
+            'default'   => 'php-ext',
             'providers' => [
                 'php-ext' => [
                     'driver' => \MoChat\WeWorkFinanceSDK\Provider\PHPExtProvider::class,

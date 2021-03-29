@@ -21,7 +21,7 @@ $corpConfig = [
 ];
 ## 包配置
 $srcConfig = [
-    'default'   => 'php-ffi',
+    'default'   => 'php-ext',
     'providers' => [
         'php-ext' => [
             'driver' => \MoChat\WeWorkFinanceSDK\Provider\PHPExtProvider::class,
