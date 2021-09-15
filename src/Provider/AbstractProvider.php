@@ -8,6 +8,7 @@ declare(strict_types=1);
  * @contact  group@mo.chat
  * @license  https://github.com/mochat-cloud/mochat/blob/master/LICENSE
  */
+
 namespace MoChat\WeWorkFinanceSDK\Provider;
 
 use MoChat\WeWorkFinanceSDK\Contract\ProviderInterface;
@@ -20,23 +21,26 @@ abstract class AbstractProvider implements ProviderInterface
      * 获取会话解密记录数据.
      * @param int $seq 起始位置
      * @param int $limit 限制条数
-     * @throws FinanceSDKException
-     * @throws InvalidArgumentException
+     * @param int $retry 重试次数
      * @return array ...
+     * @throws InvalidArgumentException
+     * @throws FinanceSDKException
      */
-    public function getDecryptChatData(int $seq, int $limit): array
+    public function getDecryptChatData(int $seq, int $limit, int $retry = 0): array
     {
         $config = $this->getConfig();
-        if (! isset($config['private_keys'])) {
+        if (!isset($config['private_keys'])) {
             throw new InvalidArgumentException('缺少配置:private_keys[{"version":"private_key"}]');
         }
         $privateKeys = $config['private_keys'];
 
         try {
-            $chatData    = json_decode($this->getChatData($seq, $limit), true)['chatdata'];
+            $chatData = json_decode($this->getChatData($seq, $limit), true)['chatdata'];
             $newChatData = [];
+            $lastSeq = 0;
             foreach ($chatData as $i => $item) {
-                if (! isset($privateKeys[$item['publickey_ver']])) {
+                $lastSeq = $item['seq'];
+                if (!isset($privateKeys[$item['publickey_ver']])) {
                     continue;
                 }
 
@@ -47,8 +51,19 @@ abstract class AbstractProvider implements ProviderInterface
                     $privateKeys[$item['publickey_ver']],
                     OPENSSL_PKCS1_PADDING
                 );
-                $newChatData[$i]        = json_decode($this->decryptData($decryptRandKey, $item['encrypt_chat_msg']), true);
+
+                // TODO 无法解密，一般为秘钥不匹配
+                // 临时补丁方案，需要改为支持多版本key
+                if ($decryptRandKey === null) {
+                    continue;
+                }
+
+                $newChatData[$i] = json_decode($this->decryptData($decryptRandKey, $item['encrypt_chat_msg']), true);
                 $newChatData[$i]['seq'] = $item['seq'];
+            }
+
+            if (!empty($chatData) && empty($chatData) && $retry && $retry < 10) {
+                return $this->getDecryptChatData($lastSeq, $limit, ++$retry);
             }
 
             return $newChatData;

@@ -66,7 +66,7 @@ class PHPExtProvider extends AbstractProvider
      */
     public function getMediaData(string $sdkFileId, string $ext): \SplFileInfo
     {
-        $path = '/tmp/' . md5((string) time());
+        $path = sys_get_temp_dir() . '/' . md5($sdkFileId);
         $ext && $path .= '.' . $ext;
         try {
             $this->financeSdk->downloadMedia($sdkFileId, $path);
