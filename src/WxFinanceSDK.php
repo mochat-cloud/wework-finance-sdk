@@ -31,9 +31,9 @@ class WxFinanceSDK
     /**
      * @var array
      */
-    protected static $wxConfig;
+    protected $wxConfig;
 
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], array $wxConfig = [])
     {
         $default = [
             'default'   => 'php-ext',
@@ -53,6 +53,7 @@ class WxFinanceSDK
         }
 
         $this->config = empty($config) ? $default : array_merge($default, $config);
+        $this->wxConfig = $wxConfig;
     }
 
     public function __call($name, $arguments)
@@ -68,8 +69,7 @@ class WxFinanceSDK
 
     public static function init(array $wxConfig = [], array $driverConfig = []): self
     {
-        self::$wxConfig = $wxConfig;
-        return new self($driverConfig);
+        return new self($driverConfig, $wxConfig);
     }
 
     /**
@@ -82,6 +82,6 @@ class WxFinanceSDK
         if (! $this->config['providers'] || ! $this->config['providers'][$providerName]) {
             throw new InvalidArgumentException("file configurations are missing {$providerName} options");
         }
-        return (new $this->config['providers'][$providerName]['driver']())->setConfig(self::$wxConfig);
+        return (new $this->config['providers'][$providerName]['driver']())->setConfig($this->wxConfig);
     }
 }
